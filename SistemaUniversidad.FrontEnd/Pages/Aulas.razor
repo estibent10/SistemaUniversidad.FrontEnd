@@ -1,6 +1,6 @@
 ﻿@page "/aulas"
 @inject HttpClient Http
-@inject IJSRuntime _jsRuntime
+@inject IJSRuntime JSRuntime
 
 <h1>
     Gestión de Aulas
@@ -16,14 +16,14 @@
                 </h3>
 
                 <div class="mb-2 mb-sm-0">
-                    <button type="button" class="btn btn-blue px-3 d-block w-100 text-95 radius-round border-2 brc-black-tp10" data-toggle="modal" data-target="#ModalAgregarAula">
+                    <button type="button" class="btn btn-blue px-3 d-block w-100 text-95 radius-round border-2 brc-black-tp10" @onclick="MostrarModalDeAgregar">
                         <i class="fa fa-plus mr-1"></i>
                         Agregar <span class="d-sm-none d-md-inline">Aula</span>
                     </button>
                 </div>
             </div>
 
-            @if (ListaAulas == null)
+            @if (ListaDeAulas == null)
             {
                 <p><em>Cargando Listado De Aulas...</em></p>
             }
@@ -41,7 +41,7 @@
 
                     <tbody class="mt-1">
 
-                        @foreach (var Aula in ListaAulas)
+                        @foreach (var Aula in ListaDeAulas)
                         {
                             <tr class="bgc-h-yellow-l4 d-style">
                                 <td class="text-600 text-dark">@Aula.NumeroAula</td>
@@ -49,9 +49,11 @@
                                 <td class="d-none d-sm-table-cell text-grey-d1">@Aula.CodigoCurso</td>
                                 <td>
                                     <div class="d-none d-lg-flex">
-                                        <a href="#" class="mx-2px btn radius-1 border-2 btn-xs btn-brc-tp btn-light-secondary btn-h-lighter-success btn-a-lighter-success">
-                                            <i class="fa fa-pencil-alt"></i>
-                                        </a>
+                                        @*<a href="#" class="mx-2px btn radius-1 border-2 btn-xs btn-brc-tp btn-light-secondary btn-h-lighter-success btn-a-lighter-success">
+                                                <i class="fa fa-pencil-alt"></i>
+                                            </a>*@
+
+                                        <button type="button" class="btn btn-primary" @onclick="() => MostrarModalDeActualizar(Aula.NumeroAula)">Editar</button>
 
                                         <a href="#" class="mx-2px btn radius-1 border-2 btn-xs btn-brc-tp btn-light-secondary btn-h-lighter-danger btn-a-lighter-danger">
                                             <i class="fa fa-trash-alt"></i>
@@ -73,7 +75,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title text-primary-d3" id="exampleModalLabel">
-                    Agregar Aula
+                    @(AccionDeEdicion + " " + "Aula")
                 </h5>
 
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -81,79 +83,167 @@
                 </button>
             </div>
 
-            <div class="modal-body">
-                <div class="form-group row">
-                    <div class="col-sm-5 col-form-label text-sm-right pr-0">
-                        <label for="NumeroAula" class="mb-0">Número de Aula</label>
+            <EditForm Model="@AulaDtoModel" OnValidSubmit="@GuardarAula">
+
+                <DataAnnotationsValidator />
+
+                <div class="modal-body">
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="NumeroAula" class="mb-0">Número de Aula</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <InputText id="NumeroAula" @bind-Value="@AulaDtoModel.NumeroAula" disabled="@(AccionDeEdicion == "Actualizar" ? true : false)"
+                                       class="form-control col-sm-12 col-md-12" placeholder="Ingrese número de aula" />
+                            <ValidationMessage For="() => AulaDtoModel.NumeroAula" />
+                        </div>
                     </div>
 
-                    <div class="col-sm-7">
-                        <input type="text" class="form-control col-sm-12 col-md-12" id="NumeroAula">
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="Horario" class="mb-0">Horario</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <InputText id="Horario" @bind-Value="@AulaDtoModel.Horario"
+                                       class="form-control col-sm-12 col-md-12" placeholder="Ingrese horario" />
+                            <ValidationMessage For="() => AulaDtoModel.Horario" />
+                        </div>
                     </div>
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="Curso" class="mb-0">Curso Asociado</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <InputText id="Curso" @bind-Value="@AulaDtoModel.CodigoCurso"
+                                       class="form-control col-sm-12 col-md-12" placeholder="Ingrese código curso" />
+                            <ValidationMessage For="() => AulaDtoModel.CodigoCurso" />
+                        </div>
+                    </div>
+
                 </div>
 
-                <div class="form-group row">
-                    <div class="col-sm-5 col-form-label text-sm-right pr-0">
-                        <label for="Horario" class="mb-0">Horario</label>
-                    </div>
-
-                    <div class="col-sm-7">
-                        <input type="text" class="form-control col-sm-12 col-md-12" id="Horario">
-                    </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary px-4" data-dismiss="modal">Cerrar</button>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
                 </div>
-
-                <div class="form-group row">
-                    <div class="col-sm-5 col-form-label text-sm-right pr-0">
-                        <label for="Curso" class="mb-0">Curso Asociado</label>
-                    </div>
-
-                    <div class="col-sm-7">
-                        <input type="text" class="form-control col-sm-12 col-md-12" id="Curso">
-                    </div>
-                </div>
-
-                <br />
-            </div>
-
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary px-4" data-dismiss="modal">Cerrar</button>
-                <button type="button" class="btn btn-primary" @onclick="AgregarAula">Guardar</button>
-            </div>
-
+            </EditForm>
         </div>
     </div>
 </div>
 
 @code {
 
-    private AulaDto[] ListaAulas;
+    private AulaDto[] ListaDeAulas;
+
+    private AulaDto AulaDtoModel = new();
+
+    private string AccionDeEdicion = "";
+
+    private string NumeroAulaPorActualizar;
+
+
+    private async Task MostrarModalDeAgregar()
+    {
+
+        AccionDeEdicion = "Agregar";
+
+        AulaDtoModel = new();
+
+        await JSRuntime.InvokeAsync<object>("global.openModal", "ModalAgregarAula");
+
+    }
+
+    private async Task MostrarModalDeActualizar(string NumeroAula)
+    {
+
+        AccionDeEdicion = "Actualizar";
+
+        await ObtenerAulaPorId(NumeroAula);
+
+        await JSRuntime.InvokeAsync<object>("global.openModal", "ModalAgregarAula");
+
+    }
+
+    private async Task GuardarAula()
+    {
+        if (AccionDeEdicion == "Agregar")
+        {
+            await AgregarAula();
+        }
+        else
+        {
+            await ActualizarAula();
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {
-        ListaAulas = await Http.GetFromJsonAsync<AulaDto[]>("https://localhost:44302/api/Aulas");
+        await ObtenerAulas();
+    }
+
+
+    #region Acciones del modelo que van al API
+
+    private async Task ObtenerAulas()
+    {
+        ListaDeAulas = await Http.GetFromJsonAsync<AulaDto[]>("https://localhost:44302/api/Aulas");
+    }
+
+    private async Task ObtenerAulaPorId(string NumeroAula)
+    {
+        AulaDtoModel = await Http.GetFromJsonAsync<AulaDto>($"https://localhost:44302/api/Aulas/{NumeroAula}");
+
+        NumeroAulaPorActualizar = AulaDtoModel.NumeroAula;
+
     }
 
     private async Task AgregarAula()
     {
-        var postBody = new AulaDto { NumeroAula = "AU-06", Horario = "07 AM - 12 PM", CodigoCurso = "cure", Activo=true};
+        var Aula = AulaDtoModel;
 
-        using var response = await Http.PostAsJsonAsync("https://localhost:44302/api/Aulas", postBody);
+        using var response = await Http.PostAsJsonAsync("https://localhost:44302/api/Aulas", Aula);
 
         if (response.IsSuccessStatusCode)
         {
-            await _jsRuntime.InvokeAsync<object>("global.closeModal", "ModalAgregarAula");//Con esto se oculta un modal
+            await JSRuntime.InvokeAsync<object>("global.closeModal", "ModalAgregarAula");
 
-            await OnInitializedAsync(); //Regarla la lista
-
+            await ObtenerAulas();
         }
         else
         {
-            //await _jsRuntime.InvokeVoidAsync("alert", "Se agregó una nueva aula!");
             string errorMessage = response.ReasonPhrase;
-            Console.WriteLine($"There was an error! {errorMessage}");
-            return;
-
+            Console.WriteLine($"Error: {errorMessage}");
         }
     }
 
+    private async Task ActualizarAula()
+    {
+        var Aula = AulaDtoModel;
+
+        using var response = await Http.PutAsJsonAsync($"https://localhost:44302/api/Aulas/{NumeroAulaPorActualizar}", Aula);
+
+        if (response.IsSuccessStatusCode)
+        {
+            await JSRuntime.InvokeAsync<object>("global.closeModal", "ModalAgregarAula");
+
+            await ObtenerAulas();
+        }
+        else
+        {
+            string errorMessage = response.ReasonPhrase;
+            Console.WriteLine($"There was an error! {errorMessage}");
+        }
+    }
+
+    private async Task EliminarAula()
+    {
+        await ObtenerAulas();
+    }
+
+    #endregion
 }
