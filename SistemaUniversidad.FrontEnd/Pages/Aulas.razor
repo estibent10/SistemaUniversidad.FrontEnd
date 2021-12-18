@@ -219,6 +219,7 @@
 
     private string NumeroAulaPorEliminar;
 
+    private string UtlHost = "https://localhost:44302/api";
 
     protected override async Task OnInitializedAsync()
     {
@@ -285,12 +286,12 @@
 
     private async Task ObtenerAulas()
     {
-        ListaDeAulas = await Http.GetFromJsonAsync<AulaDto[]>("https://localhost:44302/api/Aulas");
+        ListaDeAulas = await Http.GetFromJsonAsync<AulaDto[]>($"{UtlHost}/Aulas");
     }
 
     private async Task ObtenerAulaPorId(string NumeroAula)
     {
-        AulaDtoModel = await Http.GetFromJsonAsync<AulaDto>($"https://localhost:44302/api/Aulas/{NumeroAula}");
+        AulaDtoModel = await Http.GetFromJsonAsync<AulaDto>($"{UtlHost}/Aulas/{NumeroAula}"); //https://localhost:44302/api/Aulas/23
 
     }
 
@@ -298,7 +299,7 @@
     {
         var Aula = AulaDtoModel;
 
-        using var response = await Http.PostAsJsonAsync("https://localhost:44302/api/Aulas", Aula);
+        using var response = await Http.PostAsJsonAsync($"{UtlHost}/Aulas", Aula); //https://localhost:44302/api/Aulas
 
         if (response.IsSuccessStatusCode)
         {
@@ -323,7 +324,7 @@
     {
         var Aula = AulaDtoModel;
 
-        using var response = await Http.PutAsJsonAsync($"https://localhost:44302/api/Aulas/{NumeroAulaPorActualizar}", Aula);
+        using var response = await Http.PutAsJsonAsync($"{UtlHost}/Aulas/{NumeroAulaPorActualizar}", Aula);//https://localhost:44302/api/Aulas/23
 
         if (response.IsSuccessStatusCode)
         {
@@ -345,7 +346,7 @@
 
     private async Task EliminarAula()
     {
-        using var response = await Http.DeleteAsync($"https://localhost:44302/api/Aulas/{NumeroAulaPorEliminar}");
+        using var response = await Http.DeleteAsync($"{UtlHost}/Aulas/{NumeroAulaPorEliminar}"); //https://localhost:44302/api/Aulas/23
 
         if (response.IsSuccessStatusCode)
         {
