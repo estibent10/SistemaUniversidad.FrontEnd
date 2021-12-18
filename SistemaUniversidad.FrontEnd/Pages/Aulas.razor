@@ -49,15 +49,16 @@
                                 <td class="d-none d-sm-table-cell text-grey-d1">@Aula.CodigoCurso</td>
                                 <td>
                                     <div class="d-none d-lg-flex">
-                                        @*<a href="#" class="mx-2px btn radius-1 border-2 btn-xs btn-brc-tp btn-light-secondary btn-h-lighter-success btn-a-lighter-success">
-                                                <i class="fa fa-pencil-alt"></i>
-                                            </a>*@
+                                        
+                                        <button type="button" class="mx-2px btn radius-1 border-2 btn-xs btn-brc-tp btn-light-secondary btn-h-lighter-success btn-a-lighter-success" @onclick="() => MostrarModalDeActualizar(Aula.NumeroAula)">
+                                            <i class="fa fa-pencil-alt"></i>
+                                        </button>
 
-                                        <button type="button" class="btn btn-primary" @onclick="() => MostrarModalDeActualizar(Aula.NumeroAula)">Editar</button>
-
-                                        <a href="#" class="mx-2px btn radius-1 border-2 btn-xs btn-brc-tp btn-light-secondary btn-h-lighter-danger btn-a-lighter-danger">
+                                        <button type="button" class="mx-2px btn radius-1 border-2 btn-xs btn-brc-tp btn-light-secondary btn-h-lighter-danger btn-a-lighter-danger" @onclick="() => MostrarModalDeEliminar(Aula.NumeroAula)">
                                             <i class="fa fa-trash-alt"></i>
-                                        </a>
+                                        </button>
+
+
                                     </div>
                                 </td>
                             </tr>
@@ -70,7 +71,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="ModalAgregarAula" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade" id="ModalEdicionDeAula" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -129,7 +130,76 @@
 
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary px-4" data-dismiss="modal">Cerrar</button>
-                    <button type="submit" class="btn btn-primary">Guardar</button>
+                    <button type="submit" class="btn btn-primary px-4">Guardar</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="ModalConfirmacionDeEliminacionDeAula" tabindex="-1" role="dialog" aria-labelledby="LabelConfirmacionDeEliminacionDeAula" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            
+            <div class="modal-header">
+                <h5 class="modal-title text-primary-d3" id="LabelConfirmacionDeEliminacionDeAula">
+                   Eliminar Aula
+                </h5>
+
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <EditForm Model="@AulaDtoModel">
+
+
+                <div class="modal-body">
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="AulaPorEliminarNumeroAula" class="mb-0">Número de Aula</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <label for="AulaPorEliminarNumeroAula" class="form-control col-sm-12 col-md-12">@AulaDtoModel.NumeroAula</label>
+                        </div>
+                    </div>
+
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="AulaPorEliminarHorario" class="mb-0">Horario</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <label for="AulaPorEliminarHorario" class="form-control col-sm-12 col-md-12">@AulaDtoModel.Horario</label>
+                        </div>
+                    </div>
+
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="AulaPorEliminarCurso" class="mb-0">Curso Asociado</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <label for="AulaPorEliminarCurso" class="form-control col-sm-12 col-md-12" disable>@AulaDtoModel.CodigoCurso</label>
+                        </div>
+                    </div>
+
+                    <div class="alert bgc-orange-l3 brc-orange-l1 text-dark-tp1" role="alert">
+                        Desea 
+                        <a class="alert-link text-danger-d1">
+                            Eliminar
+                        </a>
+                        este registro?
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary px-4" data-dismiss="modal">No</button>
+                    <button type="button" class="btn btn-primary px-4" @onclick="ConfirmarEliminacionDeAula">Sí</button>
                 </div>
             </EditForm>
         </div>
@@ -142,9 +212,18 @@
 
     private AulaDto AulaDtoModel = new();
 
-    private string AccionDeEdicion = "";
+
+    private string AccionDeEdicion;
 
     private string NumeroAulaPorActualizar;
+
+    private string NumeroAulaPorEliminar;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ObtenerAulas();
+    }
 
 
     private async Task MostrarModalDeAgregar()
@@ -154,7 +233,7 @@
 
         AulaDtoModel = new();
 
-        await JSRuntime.InvokeAsync<object>("global.openModal", "ModalAgregarAula");
+        await JSRuntime.InvokeAsync<object>("global.openModal", "ModalEdicionDeAula");
 
     }
 
@@ -165,7 +244,9 @@
 
         await ObtenerAulaPorId(NumeroAula);
 
-        await JSRuntime.InvokeAsync<object>("global.openModal", "ModalAgregarAula");
+        NumeroAulaPorActualizar = NumeroAula;
+
+        await JSRuntime.InvokeAsync<object>("global.openModal", "ModalEdicionDeAula");
 
     }
 
@@ -181,9 +262,22 @@
         }
     }
 
-    protected override async Task OnInitializedAsync()
+
+    private async Task MostrarModalDeEliminar(string NumeroAula)
     {
-        await ObtenerAulas();
+
+        await ObtenerAulaPorId(NumeroAula);
+
+        NumeroAulaPorEliminar = NumeroAula;
+
+        await JSRuntime.InvokeAsync<object>("global.openModal", "ModalConfirmacionDeEliminacionDeAula");
+    }
+
+    private async Task ConfirmarEliminacionDeAula()
+    {
+
+        await EliminarAula();
+
     }
 
 
@@ -198,8 +292,6 @@
     {
         AulaDtoModel = await Http.GetFromJsonAsync<AulaDto>($"https://localhost:44302/api/Aulas/{NumeroAula}");
 
-        NumeroAulaPorActualizar = AulaDtoModel.NumeroAula;
-
     }
 
     private async Task AgregarAula()
@@ -210,14 +302,20 @@
 
         if (response.IsSuccessStatusCode)
         {
-            await JSRuntime.InvokeAsync<object>("global.closeModal", "ModalAgregarAula");
+            await JSRuntime.InvokeAsync<object>("global.closeModal", "ModalEdicionDeAula");
 
             await ObtenerAulas();
+
+            await JSRuntime.InvokeAsync<object>("global.mostrarAlertaExito", "Aula agregada correctamente");
+
         }
         else
         {
             string errorMessage = response.ReasonPhrase;
             Console.WriteLine($"Error: {errorMessage}");
+
+            await JSRuntime.InvokeAsync<object>("global.mostrarAlertaError", "No se pudo agregar el aula ");
+
         }
     }
 
@@ -229,20 +327,42 @@
 
         if (response.IsSuccessStatusCode)
         {
-            await JSRuntime.InvokeAsync<object>("global.closeModal", "ModalAgregarAula");
+            await JSRuntime.InvokeAsync<object>("global.closeModal", "ModalEdicionDeAula");
 
             await ObtenerAulas();
+
+            await JSRuntime.InvokeAsync<object>("global.mostrarAlertaExito", "Aula actualizada correctamente");
         }
         else
         {
             string errorMessage = response.ReasonPhrase;
             Console.WriteLine($"There was an error! {errorMessage}");
+
+            await JSRuntime.InvokeAsync<object>("global.mostrarAlertaError", "No se pudo actualizar el aula ");
+
         }
     }
 
     private async Task EliminarAula()
     {
-        await ObtenerAulas();
+        using var response = await Http.DeleteAsync($"https://localhost:44302/api/Aulas/{NumeroAulaPorEliminar}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            await JSRuntime.InvokeAsync<object>("global.closeModal", "ModalConfirmacionDeEliminacionDeAula");
+
+            await ObtenerAulas();
+
+            await JSRuntime.InvokeAsync<object>("global.mostrarAlertaExito", "Aula eliminada correctamente");
+        }
+        else
+        {
+            string errorMessage = response.ReasonPhrase;
+            Console.WriteLine($"There was an error! {errorMessage}");
+
+            await JSRuntime.InvokeAsync<object>("global.mostrarAlertaError", "Error al eliminar el aula");
+
+        }
     }
 
     #endregion

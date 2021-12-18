@@ -18103,7 +18103,7 @@ a[data-toggle="collapse"]:not(.collapsed) .toggle-icon[class*="-right"], .accord
 
 .ace-toaster-container {
   position: fixed !important;
-  z-index: 1023;
+  z-index: 1051; /*1023*/
   pointer-events: none;
   display: -ms-flexbox;
   display: flex;
